@@ -7,15 +7,55 @@
 //
 
 import UIKit
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    let hours = 19
+    let minute = 00
+    var notificationGranted = true
+    var isFirst = true
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         return true
+        
+        //許可を促すアラートを出す
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { (granted, error) in
+            self.notificationGranted = granted
+            if let error = error {
+                print("エラーです")
+            }
+        }
+        
+        isFirst = false
+        setNotification()
+        
+        return true
+    }
+    
+    func setNotification() {
+        var notificationTime = DateComponents()
+        var trigger:UNNotificationTrigger
+        notificationTime.hour = hours
+        notificationTime.minute = minute
+        trigger = UNCalendarNotificationTrigger(dateMatching: notificationTime, repeats: true)
+        let content = UNMutableNotificationContent()
+        content.title = "19時になりました"
+        content.body = "ニュースが更新されました"
+        content.sound = .default
+        
+        //通知スタイル
+        let request = UNNotificationRequest(identifier: "uuid", content: content, trigger: trigger)
+        
+        //通知をセット
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
+    }
+    
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        setNotification()
     }
 
     // MARK: UISceneSession Lifecycle
